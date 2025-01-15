@@ -53,6 +53,7 @@ class MazeGenerator():
 class AgentT1(MazeGenerator):
     def __init__(self,color,*args) -> None:
         self.position = [0,0]
+        self.tour = []
         self.prev_pos = []
         self.color = color
         self.motion = True
@@ -81,7 +82,13 @@ class AgentT1(MazeGenerator):
         else:
             next_pos = self.position
         
+        if not self.position in self.tour:
+            self.tour.append(self.position.copy)
+        else:
+            self.tour.remove(self.position)
+        
         self.position = next_pos
+        
 
 class AgentT2(MazeGenerator):
     def __init__(self,color,*args) -> None:

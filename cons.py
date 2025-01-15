@@ -1,6 +1,6 @@
 WINDOW_SIZE = 760 # Ancho de la ventana por defecto
 
-N_CELLS = 51 # Tamaño de la matriz por defecto
+N_CELLS = 31 # Tamaño de la matriz por defecto
 
 DARKRED = (139,0,0)
 DORANGE = (255,140,0)
