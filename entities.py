@@ -82,8 +82,10 @@ class AgentT1(MazeGenerator):
         else:
             next_pos = self.position
         
+        if next_pos in self.tour:
+            self.tour.append(next_pos)
         if not self.position in self.tour:
-            self.tour.append(self.position.copy)
+            self.tour.append(self.position.copy())
         else:
             self.tour.remove(self.position)
         
