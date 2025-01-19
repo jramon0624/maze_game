@@ -13,7 +13,7 @@ display_info = pygame.display.Info()
 screen_width, screen_height = display_info.current_w, display_info.current_h
 
 # Tamaño de la ventana
-window_margin = 0.1  # Margen para no ocupar toda la pantalla
+window_margin = 0.5  # Margen para no ocupar toda la pantalla
 window_width = int(screen_width * (1 - window_margin))
 window_height = int(screen_height * (1 - window_margin))
 
