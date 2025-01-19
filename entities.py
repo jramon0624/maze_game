@@ -1,4 +1,6 @@
 import random as rd
+from typing import Optional, List, Tuple
+
 
 class MazeGenerator():
     def __init__(self,color=(34,139,34)):
@@ -53,6 +55,7 @@ class MazeGenerator():
 class AgentT1(MazeGenerator):
     def __init__(self,color,*args) -> None:
         self.position = [0,0]
+        self.tour = []
         self.prev_pos = []
         self.color = color
         self.motion = True
@@ -81,7 +84,15 @@ class AgentT1(MazeGenerator):
         else:
             next_pos = self.position
         
+        if next_pos in self.tour:
+            self.tour.append(next_pos)
+        if not self.position in self.tour:
+            self.tour.append(self.position.copy())
+        else:
+            self.tour.remove(self.position)
+        
         self.position = next_pos
+        
 
 class AgentT2(MazeGenerator):
     def __init__(self,color,*args) -> None:
@@ -115,92 +126,24 @@ class AgentT2(MazeGenerator):
         self.position = next_pos
 
 
-### Agente modificado
-class AgentT3(MazeGenerator):
-    def __init__(self,color,*args) -> None:
-        self.position = [0,0]
-        self.visited = []
-        self.visited_copy = []
-        self.tour = []
-        self.next_path = []
-        self.color = color
-        self.motion = True
-    
-    def get_available(self,maze,position_,visited_):
-        self.pos_available = []
-        positions = [[a[0]+b[0],a[1]+b[1]] for a, b in zip([position_ for _ in range(4)],[[0,1],[1,0],[0,-1],[-1,0]])]
-
-        for position in positions:
-            if self.available(position,maze):
-                if not maze[position[0]][position[1]] == 0 and not position in visited_:
-                    self.pos_available.append(position)
-
-    def move(self,maze,goal,*args):
-        if not self.next_path:
-            self.get_available(maze,self.position,self.visited)
-
-            if len(self.pos_available) == 1 :
-                next_pos = rd.choice(self.pos_available)
-                self.tour.append(self.position)
-                self.visited.append(self.position)
-                self.position = next_pos
-            else:
-                # [[0, 0], [0, 1], [1, 0], [1, 1]]
-                # [[[0, 0]], [[0, 1]], [[1, 0]], [[1, 1]]]
-                self.next_path.extend([[pos_available] for pos_available in self.pos_available])
-                self.visited.append(self.position)
-                self.visited_copy = [self.visited.copy() for _ in range(len(self.pos_available))]
-                self.position = self.visited.pop()
-        elif len(self.next_path) > 1:
-            path_to_delete = []            
-            new_paths = []
-            new_visited = []
-            for path, visited in zip(self.next_path,self.visited_copy):
-                position = path[-1]
-                maze[position[0]][position[1]] = 3
-                self.get_available(maze,position,visited)
-                
-                new_path = len(self.pos_available) - 1
-
-                visited.append(position)
-
-                if new_path == 0:
-                    path.append(self.pos_available[0])
-                elif new_path > 0:
-                    for new_position in self.pos_available[1:]:
-                        new_paths.append(path.copy())
-                        new_paths[-1].append(new_position)
-                        new_visited.append(visited)
-                    path.append(self.pos_available[0])
-                else:
-                    path_to_delete.append((path,visited))
-
-            for path, visited in path_to_delete:
-                if not goal in path:
-                    self.next_path.remove(path)
-                    for position in path:
-                        if not any([position in this_path for this_path in self.next_path]):
-                            maze[position[0]][position[1]] = 1
-                    self.visited_copy.remove(visited)
-            
-            self.next_path.extend(new_paths)
-            self.visited_copy.extend(new_visited)
-        else:
-            self.tour.append(self.position)
-            self.visited.append(self.position)
-            self.position = self.next_path[0].pop(0)
-            if not self.next_path[0]:
-                self.next_path.remove([])
-                self.visited_copy = []
-            
-
-
-            
-
+class AgentT3(AgentT2):
+    def find_alternative_route(self, position: Tuple[int, int]) -> Optional[List[Tuple[int, int]]]:
+        """
+        Busca una ruta alternativa en caso de encontrarse con un obstáculo.
+        Optimizado para reducir operaciones innecesarias.
+        """
+        stack = [(position, [position])]
+        visited = set()
         
-
-        
-        
-
-        
-        
+        while stack:
+            current, path = stack.pop()
+            if current in visited:
+                continue
+            visited.add(current)
+            for neighbor in self.get_neighbors(current):
+                if neighbor not in visited:
+                    new_path = path + [neighbor]
+                    if self.maze[neighbor[1]][neighbor[0]] == 'END':
+                        return new_path
+                    stack.append((neighbor, new_path))
+        return None
