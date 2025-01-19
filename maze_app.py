@@ -6,7 +6,7 @@ from cons import *
 
 # Inicialización
 pygame.init()
-clock = pygame.time.Clock()
+clock = pygame.time.Clock() 
 
 # Parámetros
 n_cells = N_CELLS
