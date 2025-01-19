@@ -17,8 +17,11 @@ def maze_generator(size_of_maze: int, random: bool = True) -> list:
         if available_pos:
             next_pos = rd.choice(available_pos)
             generator.visited.append(generator.position.copy())
+            no_pass = True
         else:
-            generator.set_goal()
+            if no_pass:
+                generator.set_goal()
+                no_pass = False
             generator.change_to_visited(new_maze)
             next_pos = generator.visited.pop()
         
