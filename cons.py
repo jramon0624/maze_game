@@ -21,7 +21,7 @@ FONDO = (255, 255, 255)
 
 # Colores de las celdas
 COLORS = {
-    0: DLGREY,      # Negro: Paredes
+    0: BLACK,      # Negro: Paredes
     1: GWHITE,      # Blanco: Pasillos
     2: DARKCYAN,    # Azul: Pasillos recorridos
     3: SOFTBLUE     # Rojo: Pasillos analizados 

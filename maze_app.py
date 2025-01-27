@@ -31,7 +31,7 @@ pygame.display.set_caption("Simulador de laberinto")
 
 # Generar el laberinto y agente
 maze, goal = maze_generator(n_cells)
-current_agent = AgentT1(DORANGE, goal)
+current_agent = AgentT2(DORANGE, goal)
 
 # Fuente
 font = pygame.font.Font(None, int(36 * (screen_width / 1920)))  # Ajusta el tamaño de la fuente dinámicamente
@@ -46,9 +46,8 @@ button_mode = pygame.Rect(width + 50, 200, button_width, button_height)
 button_speed_up = pygame.Rect(width + 200, 260, 50, button_height)
 button_speed_down = pygame.Rect(width + 50, 260, 50, button_height)
 
-
 # Opciones de modo de búsqueda
-modes = ["Aleatorio", "Profundad", "Anchura"]
+modes = ["Aleatorio", "Profundidad", "Anchura"]
 current_mode_index = 1
 
 # Estado de botones
@@ -97,9 +96,6 @@ def draw_buttons():
     text_speed_value = font.render(str(speed_percentage), True, BLACK)
     screen.blit(text_speed_value, (button_speed_down.x + 87, button_speed_down.y + 45))
 
-
-
-
 def draw_timer(time_elapsed):
     timer_text = title_font.render(f"{time_elapsed // 60}:{time_elapsed % 60:02}", True, BLACK)
     pygame.draw.rect(screen, WHITE, (0, 0, width + 300, 40))
@@ -111,7 +107,6 @@ running = True
 start_time = pygame.time.get_ticks()
 time_elapsed = 0
 speed = 60
-
 reached_goal = False
 
 def draw_goal_message():
@@ -148,7 +143,12 @@ while running:
                     pause_label = "Pausar"
                 else:
                     maze, goal = maze_generator(n_cells)
-                    current_agent = AgentT3(DORANGE, goal)
+                    if current_mode_index == 0:
+                        current_agent = AgentT1(DORANGE, goal)
+                    elif current_mode_index == 1:
+                        current_agent = AgentT2(DORANGE, goal)
+                    elif current_mode_index == 2:
+                        current_agent = AgentT3(DORANGE, goal)
                     start_time = pygame.time.get_ticks()
                     time_elapsed = 0
                     paused = True
