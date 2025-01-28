@@ -13,40 +13,42 @@ display_info = pygame.display.Info()
 screen_width, screen_height = display_info.current_w, display_info.current_h
 
 # Tamaño de la ventana
-window_margin = 0.1  # Margen para no ocupar toda la pantalla
+window_margin = 0.2  # Reducir margen para que la ventana use más espacio
 window_width = int(screen_width * (1 - window_margin))
 window_height = int(screen_height * (1 - window_margin))
 
 # Parámetros
 n_cells = N_CELLS
-cell_size = min(window_width, window_height) // N_CELLS
+cell_size = min(window_width, window_height - 120) // N_CELLS
 cols = n_cells
 rows = n_cells
 width = cols * cell_size
 height = rows * cell_size
 
 # Configuración de la ventana adaptable
-screen = pygame.display.set_mode((width + 300, height + 120), pygame.RESIZABLE | pygame.SCALED)
-pygame.display.set_caption("Maze Game")
+screen = pygame.display.set_mode((width + 300, height + 40), pygame.RESIZABLE | pygame.SCALED)
+pygame.display.set_caption("Simulador de laberinto")
 
 # Generar el laberinto y agente
 maze, goal = maze_generator(n_cells)
-current_agent = AgentT3(DORANGE, goal)
+current_agent = AgentT2(DORANGE, goal)
 
 # Fuente
 font = pygame.font.Font(None, int(36 * (screen_width / 1920)))  # Ajusta el tamaño de la fuente dinámicamente
 title_font = pygame.font.Font(None, int(48 * (screen_width / 1920)))
 
-# Botones
-button_start = pygame.Rect(width + 50, 100, 200, 40)
-button_pause = pygame.Rect(width + 50, 160, 200, 40)
-button_mode = pygame.Rect(width + 50, 220, 200, 40)
-button_speed_up = pygame.Rect(width + 180, 300, 50, 40)
-button_speed_down = pygame.Rect(width + 50, 300, 50, 40)
+# Botones - dinámicos
+button_width, button_height = 200, 40
+
+button_start = pygame.Rect(width + 50, 80, button_width, button_height)
+button_pause = pygame.Rect(width + 50, 140, button_width, button_height)
+button_mode = pygame.Rect(width + 50, 200, button_width, button_height)
+button_speed_up = pygame.Rect(width + 200, 260, 50, button_height)
+button_speed_down = pygame.Rect(width + 50, 260, 50, button_height)
 
 # Opciones de modo de búsqueda
-modes = ["AgentT1", "AgentT2", "AgentT3"]
-current_mode_index = 2
+modes = ["Aleatorio", "Profundidad", "Anchura"]
+current_mode_index = 1
 
 # Estado de botones
 start_label = "Iniciar"
@@ -86,8 +88,13 @@ def draw_buttons():
     screen.blit(text_speed_down, (button_speed_down.x + (button_speed_down.width - text_speed_down.get_width()) // 2, button_speed_down.y + 5))
 
     # Texto de velocidad
-    text_speed = font.render("Velocidad", True, BLACK)
-    screen.blit(text_speed, (button_speed_down.x + 70, button_speed_down.y + 5))
+    text_speed = font.render("SPEED", True, BLACK)
+    screen.blit(text_speed, (button_speed_down.x + 60, button_speed_down.y + 5))
+
+    # Valor numérico de velocidad
+    speed_percentage = int((speed - 10) / 1.1)  # Escala de velocidad del 1 al 100
+    text_speed_value = font.render(str(speed_percentage), True, BLACK)
+    screen.blit(text_speed_value, (button_speed_down.x + 87, button_speed_down.y + 45))
 
 def draw_timer(time_elapsed):
     timer_text = title_font.render(f"{time_elapsed // 60}:{time_elapsed % 60:02}", True, BLACK)
@@ -100,10 +107,25 @@ running = True
 start_time = pygame.time.get_ticks()
 time_elapsed = 0
 speed = 60
+reached_goal = False
+
+def draw_goal_message():
+    # Fondo semitransparente
+    overlay = pygame.Surface((width, height))
+    overlay.set_alpha(180)  # Opacidad del fondo
+    overlay.fill((0, 0, 0))  # Color negro
+    screen.blit(overlay, (0, 40))  # Ajusta para respetar el encabezado
+
+    # Mensaje
+    message_text = title_font.render("¡Llegó a la meta!", True, WHITE)
+    screen.blit(
+        message_text,
+        (width // 2 - message_text.get_width() // 2, height // 2 - message_text.get_height() // 2 + 40)
+    )
 
 # Bucle principal
 while running:
-    screen.fill(WHITE)
+    screen.fill(FONDO)  # Fondo negro
 
     # Eventos
     for event in pygame.event.get():
@@ -114,20 +136,27 @@ while running:
                 if start_label == "Iniciar":
                     paused = False
                     started = True
+                    reached_goal = False  # Reinicia el estado de meta
                     start_time = pygame.time.get_ticks() - time_elapsed * 1000
                     size_locked = True
                     start_label = "Reiniciar"
                     pause_label = "Pausar"
                 else:
                     maze, goal = maze_generator(n_cells)
-                    current_agent = AgentT3(DORANGE, goal)
+                    if current_mode_index == 0:
+                        current_agent = AgentT1(DORANGE, goal)
+                    elif current_mode_index == 1:
+                        current_agent = AgentT2(DORANGE, goal)
+                    elif current_mode_index == 2:
+                        current_agent = AgentT3(DORANGE, goal)
                     start_time = pygame.time.get_ticks()
                     time_elapsed = 0
                     paused = True
                     started = False
+                    reached_goal = False
                     start_label = "Iniciar"
                     pause_label = "Pausar"
-            elif button_pause.collidepoint(event.pos) and started:
+            elif button_pause.collidepoint(event.pos) and started and not reached_goal:
                 paused = not paused
                 pause_label = "Continuar" if paused else "Pausar"
             elif button_mode.collidepoint(event.pos) and not started:
@@ -138,12 +167,13 @@ while running:
                     current_agent = AgentT2(DORANGE, goal)
                 elif current_mode_index == 2:
                     current_agent = AgentT3(DORANGE, goal)
-            elif button_speed_up.collidepoint(event.pos) and started:
+            elif button_speed_up.collidepoint(event.pos) and started and not reached_goal:
                 speed = min(speed + 10, 120)
-            elif button_speed_down.collidepoint(event.pos) and started:
+            elif button_speed_down.collidepoint(event.pos) and started and not reached_goal:
                 speed = max(speed - 10, 10)
 
-    if not paused and started:
+    # Actualiza el tiempo solo si no se ha llegado a la meta
+    if not paused and started and not reached_goal:
         time_elapsed = (pygame.time.get_ticks() - start_time) // 1000
 
     for row in range(rows):
@@ -163,12 +193,22 @@ while running:
 
             pygame.draw.rect(screen, color, (col * cell_size, row * cell_size + 40, cell_size, cell_size))
 
+    # Comprueba si el agente llegó a la meta
+    if current_agent.position == goal and not reached_goal:
+        reached_goal = True
+        paused = True  # Pausa la simulación al alcanzar la meta
+
+    # Movimiento del agente solo si no se llegó a la meta
     if not current_agent.position == goal and not paused and started:
         maze[current_agent.position[0]][current_agent.position[1]] = 2
         current_agent.move(maze, goal)
 
     draw_buttons()
     draw_timer(time_elapsed)
+
+    # Muestra el mensaje si se llegó a la meta
+    if reached_goal:
+        draw_goal_message()
 
     pygame.display.flip()
     clock.tick(speed)

@@ -17,9 +17,11 @@ DLGREY = (169, 169, 169)  # Dark Gray
 DORANGE = (255, 140, 0)  # Dark Orange
 SOFTBLUE = (204,139,139)
 
+FONDO = (255, 255, 255)
+
 # Colores de las celdas
 COLORS = {
-    0: DLGREY,      # Negro: Paredes
+    0: BLACK,      # Negro: Paredes
     1: GWHITE,      # Blanco: Pasillos
     2: DARKCYAN,    # Azul: Pasillos recorridos
     3: SOFTBLUE     # Rojo: Pasillos analizados 
