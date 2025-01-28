@@ -1,6 +1,6 @@
 WINDOW_SIZE = 700 # Ancho de la ventana por defecto
 
-N_CELLS = 21 # Tamaño de la matriz por defecto
+N_CELLS = 51 # Tamaño de la matriz por defecto
 
 # Colores en formato RGB
 GWHITE = (248,248,255)
